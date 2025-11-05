@@ -73,6 +73,8 @@ Stíněné vodiče k tenzometrům (lepší stabilita)
 
 
 
+
+
 Instalace
 
 Naklonuj repozitář / stáhni soubory.
@@ -104,6 +106,11 @@ OLED ukazuje „Váha sudu“ (obsah) a „Počet piv“.
 Přepočet piv: pevně 1 pivo = 0,505 kg (střed hustoty piva).
 Chceš-li 0.5 kg, uprav v YAML konstantu MASS_PER_BEER.
 
+3D TIsk
+
+Pouzdro pro Esp32: https://www.printables.com/model/1014797-simple-case-for-the-cheap-esp32-breakout-board-of/files
+Obal sensoru HX711: https://www.printables.com/model/879042-hx711-ad-module-board-bracket
+ESP32 Development Boar: https://www.aliexpress.com/item/1005005626482837.html?spm=a2g0o.order_list.order_list_main.352.7c7d1802KTyT46
 
 Offline režim
 

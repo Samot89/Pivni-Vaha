@@ -1,0 +1,331 @@
+esphome:
+  name: pivni-vaha
+  friendly_name: Pivní váha
+# Trvalé ukládání hodnot do flash (pro globals, number, atd.)
+preferences:
+  flash_write_interval: 30s  # po změně se zapíše nejpozději do 10 s (chraň flash, běžně 30–60 s)
+
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+  baud_rate: 0
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "61IP8dTD/exY4XMsAlQ93PKiTbbl83F10+7jWfLcQXE="
+
+ota:
+  - platform: esphome
+    password: "eeb7037c3a70d8f52291e1e43dfa9215"
+    
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  reboot_timeout: 0s      # nikdy se neresetuje kvůli Wi-Fi
+  power_save_mode: none   # nižší latence (měření/display svižně
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "PivniVaha-AP"
+    password: "12345678"
+
+web_server:
+  port: 80
+
+
+    
+# ---------- I2C (OLED) ----------
+i2c:
+  sda: GPIO25
+  scl: GPIO27
+  scan: true
+  frequency: 100kHz
+  
+
+
+font: 
+  - file: "Arial Bold.ttf"       
+    id: arial_bold_16
+    size: 20
+    glyphs: ["V","a","h"," ","s","u","d",":","P","o","c","e","t","p","i","v","k","g","0","1","2","3","4","5","6","7","8","9",".","b","O"]
+
+  - file: "arial.ttf"
+    id: font1
+    size: 15
+    glyphs: ["P", "i", "v", "a", ":", "k", "s", "V", "h", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "C", "g", "l", " ","b","O","p"]
+
+display:
+  - platform: ssd1306_i2c
+    model: 'SH1107_128x64'
+    rotation: 90
+    flip_y: false
+    flip_x: false
+    offset_y: 96
+    offset_x: 0
+    contrast: 1.0
+    id: oled_display
+    pages:
+      - id: page_main
+        lambda: |-
+          const int X = 18;  // posun doprava (16–22 je fajn)
+          // Titulek
+          it.printf(X, 0,  id(font1), "Obsah piva");
+          // Váha (tučně pseudo-bold)
+          it.printf(X, 14, id(font1), "%.1f kg", id(total_weight).state);
+          it.printf(X+1, 14, id(font1), "%.1f kg", id(total_weight).state);
+          // Počet piv (tučně pseudo-bold)
+          it.printf(X, 32, id(arial_bold_16), "Pocet piv");
+          it.printf(X+1, 32, id(arial_bold_16), "Pocet piv");
+          it.printf(X, 46, id(arial_bold_16), "%.0f ks", id(pocet_piv).state);
+          it.printf(X+1, 46, id(arial_bold_16), "%.0f ks", id(pocet_piv).state);
+
+# ---------- Senzory ----------
+sensor:
+  - platform: hx711
+    name: "Noha 1"
+    id: load_cell_1
+    dout_pin: GPIO34
+    clk_pin:
+      number: 26
+      allow_other_uses: true
+    gain: 128
+    update_interval: 1000ms
+    accuracy_decimals: 3
+    filters:
+      - median: { window_size: 5, send_every: 3, send_first_at: 1 }
+      - exponential_moving_average:
+          alpha: 0.2
+          send_every: 1
+      - lambda: |-
+          // kg
+          return (x - id(zero1)) * id(scale1);
+
+  - platform: hx711
+    name: "Noha 2"
+    id: load_cell_2
+    dout_pin: GPIO35
+    clk_pin:
+      number: 26
+      allow_other_uses: true
+    gain: 128
+    update_interval: 1000ms
+    accuracy_decimals: 3
+    filters:
+      - median: { window_size: 5, send_every: 3, send_first_at: 1 }
+      - exponential_moving_average:
+          alpha: 0.2
+          send_every: 1
+      - lambda: |-
+          return (x - id(zero2)) * id(scale2);
+
+  - platform: hx711
+    name: "Noha 3"
+    id: load_cell_3
+    dout_pin: GPIO13
+    clk_pin:
+      number: 26
+      allow_other_uses: true
+    gain: 128
+    update_interval: 1000ms
+    accuracy_decimals: 3
+    filters:
+      - median: { window_size: 5, send_every: 3, send_first_at: 1 }
+      - exponential_moving_average:
+          alpha: 0.2
+          send_every: 1
+      - lambda: |-
+          return (x - id(zero3)) * id(scale3);
+
+  - platform: hx711
+    name: "Noha 4"
+    id: load_cell_4
+    dout_pin: GPIO14
+    clk_pin:
+      number: 26
+      allow_other_uses: true
+    gain: 128
+    update_interval: 1000ms
+    accuracy_decimals: 3
+    filters:
+      - median: { window_size: 5, send_every: 3, send_first_at: 1 }
+      - exponential_moving_average:
+          alpha: 0.2
+          send_every: 1
+      - lambda: |-
+          return (x - id(zero4)) * id(scale4);
+
+  
+  # Součet všech 4 nohou – hrubá váha bez odečtu sudu
+  - platform: template
+    name: "Hmotnost bez offsetu sudu"
+    id: total_weight_no_keg
+    unit_of_measurement: "kg"
+    accuracy_decimals: 2
+    update_interval: 1s
+    lambda: |-
+      float w = id(load_cell_1).state + id(load_cell_2).state + id(load_cell_3).state + id(load_cell_4).state;
+      return w;
+
+  - platform: template
+    name: "Celková hmotnost"
+    id: total_weight
+    unit_of_measurement: "kg"
+    accuracy_decimals: 1
+    update_interval: 1s
+    lambda: |-
+      float w = id(total_weight_no_keg).state - id(sud_offset);
+      if (w < 0) w = 0;
+      return w;
+
+  # Počet piv – pevně: 1 pivo = 0,505 kg
+  - platform: template
+    name: "Pocet piv"
+    id: pocet_piv
+    unit_of_measurement: "ks"
+    accuracy_decimals: 0
+    update_interval: 1s
+    lambda: |-
+      const float MASS_PER_BEER = 0.505f;
+      float beers = id(total_weight).state / MASS_PER_BEER;
+      int ks = (int) lroundf(beers);  // nebo floorf(beers) pro konzervativní
+      if (ks < 0) ks = 0;
+      return ks;
+
+
+
+  - platform: wifi_signal
+    name: "WiFi síla signálu"
+    update_interval: 60s
+
+  - platform: uptime
+    name: "Uptime"
+    update_interval: 60s
+
+button:
+  # KROK A: uložit nulu (bez zátěže)
+  - platform: template
+    name: "Kalibrace A – uložit nulu"
+    on_press:
+      then:
+        - lambda: |-
+            id(zero1) = id(load_cell_1).raw_state;
+            id(zero2) = id(load_cell_2).raw_state;
+            id(zero3) = id(load_cell_3).raw_state;
+            id(zero4) = id(load_cell_4).raw_state;
+            ESP_LOGI("cal", "Ulozena nula RAW: z1=%.0f z2=%.0f z3=%.0f z4=%.0f",
+              id(zero1), id(zero2), id(zero3), id(zero4));
+        - component.update: load_cell_1
+        - component.update: load_cell_2
+        - component.update: load_cell_3
+        - component.update: load_cell_4
+
+  
+  # KROK B: spocitat scale (2.0 kg)
+  - platform: template
+    name: "Kalibrace B – spocitat scale (2.0 kg)"
+    on_press:
+      then:
+        - lambda: |-
+            const float target_per_leg = id(ref_weight) / 4.0f;  // 0.5 kg na nohu
+            const float eps = 1.0f;  // ochrana proti dělení nulou
+
+            float d1 = id(load_cell_1).raw_state - id(zero1);
+            float d2 = id(load_cell_2).raw_state - id(zero2);
+            float d3 = id(load_cell_3).raw_state - id(zero3);
+            float d4 = id(load_cell_4).raw_state - id(zero4);
+
+            if (fabsf(d1) < eps || fabsf(d2) < eps || fabsf(d3) < eps || fabsf(d4) < eps) {
+              ESP_LOGW("cal", "Delta RAW je prilis mala. d1=%.0f d2=%.0f d3=%.0f d4=%.0f", d1, d2, d3, d4);
+            } else {
+              id(scale1) = target_per_leg / d1;
+              id(scale2) = target_per_leg / d2;
+              id(scale3) = target_per_leg / d3;
+              id(scale4) = target_per_leg / d4;
+              ESP_LOGI("cal", "Vypoctene scale: s1=%e s2=%e s3=%e s4=%e",
+                id(scale1), id(scale2), id(scale3), id(scale4));
+            }
+        - component.update: load_cell_1
+        - component.update: load_cell_2
+        - component.update: load_cell_3
+        - component.update: load_cell_4
+
+
+# === KALIBRAČNÍ PROMĚNNÉ ===
+globals:
+  # RAW nula (uloží se v Kroku A)
+  - id: zero1
+    type: float
+    restore_value: yes
+    initial_value: '0.0'
+  - id: zero2
+    type: float
+    restore_value: yes
+    initial_value: '0.0'
+  - id: zero3
+    type: float
+    restore_value: yes
+    initial_value: '0.0'
+  - id: zero4
+    type: float
+    restore_value: yes
+    initial_value: '0.0'
+
+  # Přepočtové koeficienty (kg / RAW) – spočtou se v Kroku B
+  - id: scale1
+    type: float
+    restore_value: yes
+    initial_value: '0.000001'   # dočasně
+  - id: scale2
+    type: float
+    restore_value: yes
+    initial_value: '0.000001'
+  - id: scale3
+    type: float
+    restore_value: yes
+    initial_value: '0.000001'
+  - id: scale4
+    type: float
+    restore_value: yes
+    initial_value: '0.000001'
+
+  # Referenční hmotnost pro kalibraci (kg) – předvyplněno 2.0
+  - id: ref_weight
+    type: float
+    restore_value: yes
+    initial_value: '2.0'
+ 
+ 
+
+  # Offset hmotnosti prázdného sudu (uloží se do flash, přežije restart)
+  # Ovládací posuvník v Home Assistantu pro ruční nastavení offsetu sudu
+  # Změň sud_offset v sekci globals podle typu sudu:
+  # - 10l = 7.0
+  # - 15l = 8.0
+  # - 30l = 10.0
+  # - 50l = 13.0
+  - id: sud_offset
+    type: float
+    restore_value: yes
+    initial_value: '8.0'  # výchozí = 15l sud (kg)
+
+number:
+  - platform: template
+    name: "Offset sudu (kg)"
+    id: sud_offset_control
+    optimistic: true
+    min_value: 0
+    max_value: 20
+    step: 0.1
+    initial_value: 8.0
+    set_action:
+      - lambda: |-
+          id(sud_offset) = x;  // uloží novou hodnotu offsetu
+
+

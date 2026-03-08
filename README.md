@@ -188,6 +188,8 @@ Import `HA-Dashboard.yaml` into Home Assistant for a ready-made card with:
 - Keg offset slider
 - Quick-set buttons for 10 / 15 / 30 / 50 L kegs
 
+![Home Assistant Dashboard](images/ha-dashboard.jpg)
+
 > **⚠️ Migration note:** If you were using an older version with Czech entity IDs (e.g. `sensor.pivni_vaha_celkova_hmotnost`), update your automations to the new English entity IDs listed above after re-flashing.
 
 ---

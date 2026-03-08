@@ -190,7 +190,6 @@ Importujte `HA-Dashboard.yaml` do Home Assistant pro předpřipravenou kartu s:
 
 ![Home Assistant Dashboard](images/ha-dashboard.jpg)
 
-> **⚠️ Poznámka k migraci:** Pokud jste používali starší verzi s českými entity ID (např. `sensor.pivni_vaha_celkova_hmotnost`), po znovu naflashování aktualizujte automatizace na nová anglická entity ID.
 
 ---
 

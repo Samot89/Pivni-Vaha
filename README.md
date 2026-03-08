@@ -190,7 +190,6 @@ Import `HA-Dashboard.yaml` into Home Assistant for a ready-made card with:
 
 ![Home Assistant Dashboard](images/ha-dashboard.jpg)
 
-> **⚠️ Migration note:** If you were using an older version with Czech entity IDs (e.g. `sensor.pivni_vaha_celkova_hmotnost`), update your automations to the new English entity IDs listed above after re-flashing.
 
 ---
 

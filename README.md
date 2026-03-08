@@ -261,8 +261,8 @@ Pivni-Vaha/
 
 Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
-- 🐛 [Report a bug](https://github.com/Samot89/Pivni-Vaha/issues/new?template=bug_report.md)
-- ✨ [Request a feature](https://github.com/Samot89/Pivni-Vaha/issues/new?template=feature_request.md)
+- 🐛 [Report a bug](https://github.com/Samot89/Beer-Keg-Scale/issues/new?template=bug_report.md)
+- ✨ [Request a feature](https://github.com/Samot89/Beer-Keg-Scale/issues/new?template=feature_request.md)
 - 🔧 [Hardware documentation](HARDWARE.md)
 - 📝 [Changelog](CHANGELOG.md)
 

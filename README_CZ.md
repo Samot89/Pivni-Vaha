@@ -239,8 +239,8 @@ Firmware běží **plně offline** bez Wi-Fi nebo Home Assistant:
 
 Příspěvky jsou vítány! Viz [CONTRIBUTING.md](CONTRIBUTING.md).
 
-- 🐛 [Nahlásit chybu](https://github.com/Samot89/Pivni-Vaha/issues/new?template=bug_report.md)
-- ✨ [Navrhnout funkci](https://github.com/Samot89/Pivni-Vaha/issues/new?template=feature_request.md)
+- 🐛 [Nahlásit chybu](https://github.com/Samot89/Beer-Keg-Scale/issues/new?template=bug_report.md)
+- ✨ [Navrhnout funkci](https://github.com/Samot89/Beer-Keg-Scale/issues/new?template=feature_request.md)
 
 ---
 

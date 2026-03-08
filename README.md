@@ -1,328 +1,290 @@
 <div align="center">
 
-# 🍺 Pivní Váha – Smart Beer Keg Scale
+# 🍺 Beer Keg Scale – Smart Monitoring System
 
-### Inteligentní váha pro měření množství piva v sudu
+### Intelligent scale for monitoring beer keg contents in real time
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![ESPHome](https://img.shields.io/badge/ESPHome-Compatible-blue.svg)](https://esphome.io/)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Integration-41BDF5.svg)](https://www.home-assistant.io/)
 [![Made with ESP32](https://img.shields.io/badge/Made%20with-ESP32-orange.svg)](https://www.espressif.com/en/products/socs/esp32)
 
-[🇨🇿 Česká dokumentace](README_CZ.md) | [🇬🇧 English Documentation](README_EN.md)
+[🇨🇿 Česká dokumentace](README_CZ.md)
 
 </div>
 
 ---
 
-## 📋 Přehled
+## 📸 Photos
 
-Chytrá váha pro **automatické sledování množství piva v sudu** s integrací do **Home Assistant**. Systém používá čtyři tenzometry pro přesné měření, OLED displej pro lokální zobrazení a pokročilé funkce kalibrace s trvalým uložením do paměti.
+<div align="center">
 
-### ✨ Klíčové vlastnosti
+| Scale platform | Keg in fridge | Electronics (bottom) |
+|:-:|:-:|:-:|
+| ![Scale platform top view](images/scale-platform-top.jpg) | ![Keg on scale](images/scale-in-use.jpg) | ![Electronics underside](images/electronics-bottom.jpg) |
 
-- **🎯 Přesné měření** pomocí 4× tenzometrů (load cells) s HX711 převodníky
-- **📺 OLED displej** (SH1106 128×64) pro zobrazení váhy a počtu piv
-- **🔧 Snadná kalibrace** - dvoukrokový proces s trvalým uložením
-- **🏠 Home Assistant** - plná integrace přes ESPHome API
-- **📱 Webové rozhraní** - přístup přes prohlížeč
-- **🔌 Offline režim** - funguje i bez Wi-Fi/HA
-- **💾 Persistentní paměť** - kalibrace přežije restart
-- **🍺 Automatický přepočet** - zobrazení počtu zbývajících piv
+</div>
 
 ---
 
-## 🚀 Rychlý start
+## 📋 Overview
 
-1. **Připravte hardware** podle tabulky [Zapojení](#-zapojení)
-2. **Stáhněte** `pivni-vaha.yaml`
-3. **Nakonfigurujte** Wi-Fi credentials v souboru
-4. **Nahrajte** do ESP32 přes ESPHome
-5. **Proveďte kalibraci** (postup níže)
-6. **Nastavte offset** prázdného sudu
-7. **Hotovo!** 🎉
+Smart scale for **automatic beer keg monitoring** with **Home Assistant** integration. The system uses four load cells for precise measurements, an OLED display for local readout, and advanced calibration with persistent flash storage.
+
+### ✨ Key Features
+
+- **🎯 Precise measurement** – 4× load cells with HX711 amplifiers, median + EMA filtering
+- **📺 OLED display** (SH1106 128×64) – shows beer content and beer count
+- **🔧 Easy two-step calibration** – persistent storage survives restarts
+- **🏠 Home Assistant** – full integration via ESPHome API
+- **📱 Web interface** – browser access on port 80
+- **🔌 Offline mode** – works without Wi-Fi / HA
+- **💾 Persistent memory** – calibration and offset survive power cycles
+- **🍺 Automatic beer count** – 1 beer = 0.505 kg (half-liter)
+
+---
+
+## 🚀 Quick Start
+
+1. **Prepare hardware** → see [Wiring](#-wiring) table
+2. **Download** `pivni-vaha.yaml`
+3. **Configure** Wi-Fi credentials in the YAML file
+4. **Flash** to ESP32 via ESPHome
+5. **Calibrate** → follow the [Calibration](#️-calibration) guide
+6. **Set keg offset** → empty keg weight
+7. **Done!** 🎉
 
 ---
 
 ## 📦 Hardware (BOM)
 
-| Komponenta | Specifikace | Množství | Poznámka |
-|------------|-------------|----------|----------|
-| ESP32 DevKit v1 | 38-pin | 1× | [AliExpress link](https://www.aliexpress.com/item/1005005626482837.html) |
-| HX711 | Load cell amplifier | 4× | ADC převodník |
-| Tenzometr | 20 kg load cell | 4× | Doporučeno 20kg |
-| OLED Display | SH1106 128×64 I²C | 1× | 0.96" nebo 1.3" |
-| Kabely | Dupont, propojovací | - | Doporučeno stíněné |
-| Zdroj | 5V → 3.3V regulovaný | 1× | Kvalitní stabilizovaný |
+| Component | Specification | Qty | Notes |
+|-----------|---------------|-----|-------|
+| ESP32 DevKit v1 | 38-pin | 1× | [AliExpress](https://www.aliexpress.com/item/1005005626482837.html) |
+| HX711 | 24-bit ADC amplifier | 4× | |
+| Load cell | 20 kg bar type | 4× | 20 kg recommended |
+| OLED display | SH1106 128×64 I²C | 1× | 0.96" or 1.3" |
+| Jumper wires | Dupont M-F, M-M | 1 set | Shielded recommended |
+| Power supply | 5V → 3.3V regulated | 1× | Quality stabilized |
 
-### Volitelné komponenty:
-- 🔌 Stíněné kabely pro tenzometry (lepší stabilita signálu)
-- 🏗️ 3D tištěné díly pro montáž ([3D modely](#-3d-tisk))
-- 🔋 Záložní napájení (UPS)
-
----
-
-## 🎨 Funkce systému
-
-### Měření a kalibrace
-- ✅ **4× nezávislá noha** (load cell) s mediánovým filtrováním a EMA
-- ✅ **Dvoukroková kalibrace A/B**
-  - **Krok A** → Uložení nuly (bez zátěže)
-  - **Krok B** → Výpočet scale faktoru pro 2,0 kg závaží
-- ✅ **TARE funkce** (vynulování všech nohou)
-- ✅ **Automatická detekce polarity** tenzometrů
-
-### Ukládání a zobrazení
-- 💾 **Flash paměť** - kalibrace a offset přežijí restart ESP32
-- 📊 **OLED zobrazení** - váha sudu + počet piv v reálném čase
-- 🎚️ **Nastavitelný offset** prázdného sudu (10L / 15L / 30L / 50L)
-- 🍺 **Automatický přepočet piv** (1 pivo = 0,505 kg)
-
-### Integrace a konektivita
-- 🏠 **Home Assistant** - senzory, ovládací prvky, automatizace
-- 🌐 **Web server** - přístup přes prohlížeč (port 80)
-- 📡 **OTA aktualizace** - bezdrátové nahrávání firmware
-- 🔌 **Offline režim** - funguje i bez Wi-Fi připojení
+**Optional:**
+- 🔌 Shielded cables for load cells (better signal stability)
+- 🏗️ 3D-printed enclosures → [3D Printing](#️-3d-printing)
+- 🔋 Backup power / UPS
 
 ---
 
-## 🔌 Zapojení
+## 🔌 Wiring
 
-### Pinout tabulka (ESP32 DevKit v1 - 38-pin)
+### Pinout (ESP32 DevKit v1 – 38-pin)
 
-| Modul              | Pin     | ESP32                                    |
-| ------------------ | ------- | ---------------------------------------- |
-| **OLED SH1106**    | SDA     | **GPIO25**                               |
-|                    | SCL     | **GPIO27**                               |
-|                    | VCC     | 3V3 (doporučeno)                         |
-|                    | GND     | GND                                      |
-| **HX711 – Noha 1** | DOUT    | **GPIO34**                               |
-|                    | SCK/CLK | **GPIO26** *(sdílené pro všechny HX711)* |
-| **HX711 – Noha 2** | DOUT    | **GPIO35**                               |
-|                    | SCK/CLK | **GPIO26**                               |
-| **HX711 – Noha 3** | DOUT    | **GPIO13**                               |
-|                    | SCK/CLK | **GPIO26**                               |
-| **HX711 – Noha 4** | DOUT    | **GPIO14**                               |
-|                    | SCK/CLK | **GPIO26**                               |
+| Module | Signal | ESP32 Pin |
+|--------|--------|-----------|
+| **OLED SH1106** | SDA | **GPIO25** |
+| | SCL | **GPIO27** |
+| | VCC | 3.3V |
+| | GND | GND |
+| **HX711 – Leg 1** | DOUT | **GPIO34** |
+| | SCK/CLK | **GPIO26** *(shared for all HX711)* |
+| **HX711 – Leg 2** | DOUT | **GPIO35** |
+| | SCK/CLK | **GPIO26** |
+| **HX711 – Leg 3** | DOUT | **GPIO13** |
+| | SCK/CLK | **GPIO26** |
+| **HX711 – Leg 4** | DOUT | **GPIO14** |
+| | SCK/CLK | **GPIO26** |
 
-> **⚠️ Poznámka:** Všechny HX711 moduly sdílejí **společný CLK pin (GPIO26)**.  
-> Napájení HX711 doporučeno **3.3V** kvůli logické kompatibilitě s ESP32.
+> **⚠️ Note:** All HX711 modules share **one CLK pin (GPIO26)**.
+> Power the HX711 modules at **3.3V** for logic-level compatibility with ESP32.
 
 ---
 
-## 🛠️ Instalace
+## 🛠️ Installation
 
-### Krok 1: Příprava ESPHome
+### Step 1 – ESPHome setup
 
-1. Naklonujte nebo stáhněte tento repozitář
-2. V **ESPHome** (v Home Assistant nebo standalone) vytvořte nové zařízení
-3. Nahrajte obsah souboru `pivni-vaha.yaml`
+1. Clone or download this repository
+2. In ESPHome (standalone or inside Home Assistant) create a new device
+3. Paste the contents of `pivni-vaha.yaml`
 
-### Krok 2: Konfigurace Wi-Fi
-
-Upravte Wi-Fi sekci v YAML souboru:
+### Step 2 – Wi-Fi configuration
 
 ```yaml
 wifi:
-  ssid: "VaseSSID"
-  password: "VaseHeslo"
+  ssid: "YourSSID"
+  password: "YourPassword"
 ```
 
-Pro **offline režim** můžete Wi-Fi sekci úplně odstranit.
+For **offline-only** use, remove the `wifi:` block entirely.
 
-### Krok 3: Nahrání firmware
+### Step 3 – Flash
 
-1. Připojte ESP32 přes USB
-2. Zkompilujte a flashněte firmware
-3. Po prvním nahrání lze používat **OTA** (Over-The-Air) aktualizace
-
----
-
-## ⚙️ Kalibrace (doporučený postup)
-
-### Krok 1: Kalibrace A – Uložení nuly
-
-1. **Odstraňte veškerou zátěž** z váhy (nic na váze)
-2. V Home Assistant stiskněte tlačítko **„Kalibrace A – uložit nulu"**
-3. Systém uloží RAW hodnoty `zero1..4` do flash paměti
-
-### Krok 2: Kalibrace B – Výpočet scale
-
-1. Umístěte **přesně 2,0 kg závaží** doprostřed váhy
-2. V Home Assistant stiskněte tlačítko **„Kalibrace B – spočítat scale (2.0 kg)"**
-3. Systém automaticky vypočítá `scale1..4` koeficienty (zvládne i obrácenou polaritu)
-
-### Krok 3: Ověření kalibrace
-
-- Entita **„Hmotnost bez offsetu sudu"** by měla zobrazovat cca **2.00 kg** (± 0.05 kg)
-- Pokud ne, opakujte kalibraci
-
-### Krok 4: Nastavení offsetu sudu
-
-V Home Assistant nastavte posuvníkem **„Offset sudu (kg)"** hmotnost prázdného sudu:
-
-| Typ sudu | Hmotnost prázdného sudu |
-|----------|------------------------|
-| 10 L     | 7.0 kg                 |
-| 15 L     | 8.0 kg                 |
-| 30 L     | 10.0 kg                |
-| 50 L     | 13.0 kg                |
-
-> **💡 Tip:** Pro přesné hodnoty můžete prázdný sud zvážit na běžné váze.
-
-### Krok 5: Hotovo!
-
-OLED displej nyní zobrazuje:
-- **Váha sudu** (obsah piva v kg)
-- **Počet piv** (automatický přepočet)
+1. Connect ESP32 via USB
+2. Compile and flash
+3. Subsequent updates can use **OTA** (Over-The-Air)
 
 ---
 
-## 🏠 Home Assistant integrace
+## ⚙️ Calibration
 
-### Dostupné entity
+### Step 1 – Calibration A: Store Zero
 
-**Senzory:**
-- `sensor.pivni_vaha_celkova_hmotnost` - Obsah piva (kg)
-- `sensor.pivni_vaha_hmotnost_bez_offsetu_sudu` - Celková váha (kg)
-- `sensor.pivni_vaha_pocet_piv` - Počet zbývajících piv (ks)
-- `sensor.pivni_vaha_noha_1` - Váha na noze 1 (kg)
-- `sensor.pivni_vaha_noha_2` - Váha na noze 2 (kg)
-- `sensor.pivni_vaha_noha_3` - Váha na noze 3 (kg)
-- `sensor.pivni_vaha_noha_4` - Váha na noze 4 (kg)
+1. **Remove all weight** from the scale
+2. Press **"Calibration A – Store Zero"** in Home Assistant
+3. RAW zero values (`zero1..4`) are saved to flash
 
-**Ovládací prvky:**
-- `number.pivni_vaha_offset_sudu_kg` - Nastavení offsetu sudu
-- `button.pivni_vaha_kalibrace_a` - Kalibrace A (nula)
-- `button.pivni_vaha_kalibrace_b` - Kalibrace B (scale)
+### Step 2 – Calibration B: Calculate Scale
 
-### Dashboard karta
+1. Place **exactly 2.0 kg** in the center of the scale
+2. Press **"Calibration B – Calculate Scale (2.0 kg)"**
+3. Scale coefficients (`scale1..4`) are calculated automatically (handles reversed polarity)
 
-Použijte přiložený soubor `HA-Dashboard.yaml` pro vytvoření předpřipravené karty v Home Assistant s:
-- Zobrazením váhy a počtu piv
-- Posuvníkem pro offset sudu
-- Rychlými tlačítky pro běžné typy sudů (10L, 15L, 30L, 50L)
+### Step 3 – Verify
 
----
+- **"Raw Weight"** entity should read ~**2.00 kg** (±0.05 kg)
+- If not, repeat calibration
 
-## 🖨️ 3D Tisk
+### Step 4 – Set Keg Offset
 
-### Dostupné modely
+Use the **"Keg Offset (kg)"** slider in Home Assistant:
 
-| Model | Popis | Link |
-|-------|-------|------|
-| ESP32 pouzdro | Jednoduché pouzdro pro ESP32 DevKit | [Printables](https://www.printables.com/model/1014797-simple-case-for-the-cheap-esp32-breakout-board-of/files) |
-| HX711 držák | Držák pro modul HX711 | [Printables](https://www.printables.com/model/879042-hx711-ad-module-board-bracket) |
+| Keg size | Empty keg weight |
+|----------|-----------------|
+| 10 L | 7.0 kg |
+| 15 L | 8.0 kg |
+| 30 L | 10.0 kg |
+| 50 L | 13.0 kg |
 
-### Tipy pro tisk
-- Materiál: **PLA** nebo **PETG**
-- Výplň: **20-30%**
-- Podpory: **ano** (pro komplexní geometrii)
+> **💡 Tip:** Weigh the empty keg on a kitchen scale for the most accurate offset.
+
+### Step 5 – Done!
+
+The OLED display now shows:
+- **Beer Content** – beer weight in kg
+- **Beer Count** – number of remaining half-liters
 
 ---
 
-## 🔌 Offline režim
+## 🏠 Home Assistant Entities
 
-Firmware funguje **plně offline** i bez připojení k Wi-Fi nebo Home Assistant:
+**Sensors:**
+| Entity ID | Description |
+|-----------|-------------|
+| `sensor.pivni_vaha_beer_content` | Beer content (kg) |
+| `sensor.pivni_vaha_raw_weight` | Total raw weight (kg) |
+| `sensor.pivni_vaha_beer_count` | Remaining beers (pcs) |
+| `sensor.pivni_vaha_leg_1` … `leg_4` | Individual leg weights (kg) |
 
-- Měření a výpočty běží lokálně v ESP32
-- OLED displej zobrazuje data v reálném čase
-- Kalibrace je uložena v paměti ESP32
-- Pro aktivaci offline režimu:
-  - V YAML je nastaveno `wifi.reboot_timeout: 0s` (žádný restart kvůli Wi-Fi)
-  - Můžete úplně odstranit bloky `wifi:`, `api:`, `ota:`, `web_server:`
+**Controls:**
+| Entity ID | Description |
+|-----------|-------------|
+| `number.pivni_vaha_keg_offset_kg` | Empty keg weight offset |
+| `button.pivni_vaha_calibration_a_store_zero` | Calibration A |
+| `button.pivni_vaha_calibration_b_calculate_scale_2_0_kg` | Calibration B |
 
----
+### Dashboard
 
-## ❓ FAQ / Řešení problémů
+Import `HA-Dashboard.yaml` into Home Assistant for a ready-made card with:
+- Beer content and beer count display
+- Keg offset slider
+- Quick-set buttons for 10 / 15 / 30 / 50 L kegs
 
-### HX711 is not ready for new measurements yet!
-- **Řešení:** Ponechte `update_interval: 1s` a sdílený CLK pin (GPIO26)
-- Ujistěte se, že všechny HX711 jsou správně napájeny
-
-### Nesmyslné hodnoty po startu
-- **Řešení:** Proveďte kalibraci A (bez zátěže) a následně kalibraci B (s 2 kg)
-- Zkontrolujte správné zapojení všech load cells
-
-### Nestabilní měření
-- **Kontrola:** Kvalitní napájení 3.3V (ne přímo z USB)
-- **Kontrola:** Stíněné kabely k tenzometrům
-- **Kontrola:** Pevné mechanické uchycení všech komponent
-- **Řešení:** Zvyšte alfa EMA filtru v YAML (např. z 0.2 na 0.1)
-
-### OLED displej je mimo střed
-- **Řešení:** Změňte hodnotu `X` v OLED lambda sekci (např. `const int X = 20;`)
-- Nebo upravte `offset_x:` hodnotu
-
-### Nesprávný počet piv
-- **Kontrola:** Konstanta `MASS_PER_BEER = 0.505` kg (půllitr piva)
-- Pro přesnější výsledky můžete změnit tuto konstantu v YAML
+> **⚠️ Migration note:** If you were using an older version with Czech entity IDs (e.g. `sensor.pivni_vaha_celkova_hmotnost`), update your automations to the new English entity IDs listed above after re-flashing.
 
 ---
 
-## 📁 Soubory v repozitáři
+## 🖨️ 3D Printing
+
+| Model | Description | Link |
+|-------|-------------|------|
+| ESP32 case | Simple enclosure for ESP32 DevKit | [Printables](https://www.printables.com/model/1014797-simple-case-for-the-cheap-esp32-breakout-board-of/files) |
+| HX711 bracket | Mount for HX711 module | [Printables](https://www.printables.com/model/879042-hx711-ad-module-board-bracket) |
+
+**Print settings:** PLA or PETG · 20–30% infill · supports as needed
+
+---
+
+## 🔌 Offline Mode
+
+The firmware runs **fully offline** without Wi-Fi or Home Assistant:
+
+- Measurement and calculations run locally on ESP32
+- OLED displays data in real time
+- Calibration stored in ESP32 flash
+- `wifi.reboot_timeout: 0s` prevents restarts on Wi-Fi loss
+- Remove `wifi:`, `api:`, `ota:`, `web_server:` blocks for a minimal offline build
+
+---
+
+## ❓ FAQ / Troubleshooting
+
+**`HX711 is not ready for new measurements yet!`**
+→ Keep `update_interval: 1s` and shared CLK on GPIO26. Ensure all HX711 modules are properly powered.
+
+**Nonsense values after startup**
+→ Run Calibration A (empty scale) then Calibration B (2 kg weight). Check load cell wiring.
+
+**Unstable readings**
+→ Use a quality 3.3V supply (not raw USB). Use shielded cables to load cells. Mechanically secure all components. Lower the EMA alpha in YAML (e.g. 0.1 instead of 0.2).
+
+**OLED display off-center**
+→ Adjust `const int X` in the OLED lambda (e.g. `const int X = 20;`) or `offset_x:`.
+
+**Incorrect beer count**
+→ Check `MASS_PER_BEER = 0.505` kg. Adjust in YAML for different glass sizes.
+
+---
+
+## 📁 Repository Structure
 
 ```
 Pivni-Vaha/
-├── README.md              # Tento soubor (hlavní dokumentace)
-├── README_CZ.md           # Česká dokumentace (podrobná)
-├── README_EN.md           # Anglická dokumentace
-├── pivni-vaha.yaml        # Kompletní ESPHome konfigurace
-├── HA-Dashboard.yaml      # Dashboard karta pro Home Assistant
-├── HARDWARE.md            # Detailní hardwarová dokumentace
-├── CHANGELOG.md           # Historie verzí a změn
-├── CONTRIBUTING.md        # Průvodce pro přispěvatele
-├── secrets.yaml.example   # Template pro konfiguraci
-├── LICENSE                # MIT License
-└── .gitignore             # Git ignore soubory
+├── README.md              # This file – English documentation
+├── README_CZ.md           # Czech documentation
+├── pivni-vaha.yaml        # ESPHome configuration
+├── HA-Dashboard.yaml      # Home Assistant dashboard card
+├── HARDWARE.md            # Detailed hardware docs
+├── CHANGELOG.md           # Version history
+├── CONTRIBUTING.md        # Contributor guide
+├── secrets.yaml.example   # Wi-Fi / API secrets template
+├── images/                # Project photos
+│   ├── scale-platform-top.jpg
+│   ├── scale-in-use.jpg
+│   └── electronics-bottom.jpg
+├── LICENSE
+└── .gitignore
 ```
 
 ---
 
-## 🤝 Přispívání
+## 🤝 Contributing
 
-Příspěvky jsou vítány! Přečtěte si prosím [CONTRIBUTING.md](CONTRIBUTING.md) pro podrobnosti o tom, jak přispět.
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
-**Rychlé odkazy:**
-- 🐛 [Nahlásit chybu](https://github.com/Samot89/Pivni-Vaha/issues/new?template=bug_report.md)
-- ✨ [Navrhnout funkci](https://github.com/Samot89/Pivni-Vaha/issues/new?template=feature_request.md)
-- 🔧 [Detailní hardwarová dokumentace](HARDWARE.md)
-- 📝 [Historie změn](CHANGELOG.md)
-
----
-
-## 📝 Changelog
-
-Pro úplnou historii změn viz [CHANGELOG.md](CHANGELOG.md)
-
-### v1.0 (2025-01)
-- ✅ První veřejné vydání
-- ✅ Podpora 4× load cells s HX711
-- ✅ OLED displej SH1106
-- ✅ Dvoukroková kalibrace
-- ✅ Home Assistant integrace
-- ✅ Offline režim
+- 🐛 [Report a bug](https://github.com/Samot89/Pivni-Vaha/issues/new?template=bug_report.md)
+- ✨ [Request a feature](https://github.com/Samot89/Pivni-Vaha/issues/new?template=feature_request.md)
+- 🔧 [Hardware documentation](HARDWARE.md)
+- 📝 [Changelog](CHANGELOG.md)
 
 ---
 
-## 📄 Licence
+## 📄 License
 
-Tento projekt je licencován pod **MIT License** - viz soubor [LICENSE](LICENSE).
+MIT License – see [LICENSE](LICENSE).
 
 ---
 
-## 🙏 Poděkování
+## 🙏 Acknowledgments
 
-- Díky komunitě **ESPHome** za vynikající platformu
-- Díky všem autorům knihoven pro **HX711** a **SH1106**
-- Tento projekt vznikl jako praktická pomůcka pro sledování spotřeby piva se zaměřením na spolehlivost a jednoduchou kalibraci
+- [ESPHome](https://esphome.io/) community for an excellent IoT platform
+- Authors of the HX711 and SH1106/SSD1306 libraries
+- Built as a practical tool for monitoring keg consumption with a focus on reliability and simple calibration
 
 ---
 
 <div align="center">
 
-**Vyrobeno s 🍺 a ❤️ pro pivní nadšence**
+**Made with 🍺 and ❤️ for beer enthusiasts**
 
-Pokud se vám projekt líbí, dejte mu ⭐ na GitHubu!
+If you like this project, give it a ⭐ on GitHub!
 
 </div>

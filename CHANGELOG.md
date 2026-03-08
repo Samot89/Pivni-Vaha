@@ -1,62 +1,58 @@
-# Changelog / Historie změn
+# Changelog
 
-Všechny významné změny v tomto projektu budou dokumentovány v tomto souboru.
 All notable changes to this project will be documented in this file.
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-Formát je založen na [Keep a Changelog](https://keepachangelog.com/cs/1.0.0/)
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
+---
 
 ## [Unreleased]
 
-### Přidáno / Added
-- Vylepšená dokumentace s badges a emoji
-- GitHub issue a PR templates
-- CONTRIBUTING.md soubor
-- .gitignore pro ESPHome projekty
-- secrets.yaml.example template
+### Added
+- Project photos in `images/` directory
+- Improved documentation structure (English primary, Czech secondary)
+- GitHub issue and PR templates
+- `CONTRIBUTING.md`
+- `.gitignore` for ESPHome projects
+- `secrets.yaml.example` template
 
-### Změněno / Changed
-- Přepracované README.md, README_EN.md, README_CZ.md
-- Zlepšená struktura dokumentace
+### Changed
+- All sensor/button/number names translated to English
+- Entity IDs updated:
+  - `sensor.pivni_vaha_celkova_hmotnost` → `sensor.pivni_vaha_beer_content`
+  - `sensor.pivni_vaha_hmotnost_bez_offsetu_sudu` → `sensor.pivni_vaha_raw_weight`
+  - `sensor.pivni_vaha_pocet_piv` → `sensor.pivni_vaha_beer_count`
+  - `number.pivni_vaha_offset_sudu_kg` → `number.pivni_vaha_keg_offset_kg`
+- `README.md` is now the primary English documentation
+- `README_CZ.md` updated as secondary Czech documentation
+- `README_EN.md` redirects to `README.md`
+
+---
 
 ## [1.0.0] - 2025-01-24
 
-### Přidáno / Added
-- ✅ První veřejné vydání / First public release
-- ✅ Podpora 4× load cells s HX711 / Support for 4× load cells with HX711
-- ✅ OLED displej SH1106 128×64 / OLED display SH1106
-- ✅ Dvoukroková kalibrace (A/B) / Two-step calibration
-- ✅ Trvalé uložení kalibrace do flash / Persistent calibration storage
-- ✅ Home Assistant integrace / Home Assistant integration
-- ✅ Webový server / Web server
-- ✅ OTA aktualizace / OTA updates
-- ✅ Offline režim / Offline mode
-- ✅ Automatický přepočet počtu piv / Automatic beer count calculation
-- ✅ Nastavitelný offset prázdného sudu / Adjustable empty keg offset
-- ✅ Mediánový a EMA filtr pro stabilní měření / Median and EMA filtering
-- ✅ Automatická detekce polarity tenzometrů / Automatic load cell polarity detection
+### Added
+- ✅ First public release
+- ✅ Support for 4× load cells with HX711
+- ✅ OLED display SH1106 128×64
+- ✅ Two-step calibration (A/B)
+- ✅ Persistent calibration storage in flash
+- ✅ Home Assistant integration
+- ✅ Web server
+- ✅ OTA firmware updates
+- ✅ Offline mode
+- ✅ Automatic beer count calculation
+- ✅ Adjustable empty keg offset
+- ✅ Median + EMA filtering for stable readings
+- ✅ Automatic load cell polarity detection
 
 ### Hardware
 - ESP32 DevKit v1 (38-pin)
 - 4× HX711 amplifier modules
-- 4× 20kg load cells
+- 4× 20 kg load cells
 - OLED SH1106 128×64 I²C display
 
-### Software
-- ESPHome YAML konfigurace / ESPHome YAML configuration
-- Home Assistant dashboard karta / Home Assistant dashboard card
-- Podrobná dokumentace CZ/EN / Detailed documentation CZ/EN
-
 ---
 
-## Popis verzí / Version Description
+## How to Contribute
 
-- **[1.0.0]** - První stabilní verze / First stable release
-- **[Unreleased]** - Změny připravené pro další verzi / Changes ready for next release
-
----
-
-## Jak přispět / How to Contribute
-
-Pokud chcete přispět do projektu, prosím přečtěte si [CONTRIBUTING.md](CONTRIBUTING.md)
-If you want to contribute, please read [CONTRIBUTING.md](CONTRIBUTING.md)
+See [CONTRIBUTING.md](CONTRIBUTING.md) for details.

@@ -1,28 +1,28 @@
 type: vertical-stack
 cards:
   - type: custom:mushroom-entity-card
-    entity: sensor.pivni_vaha_celkova_hmotnost
-    name: Obsah piva (kg)
+    entity: sensor.pivni_vaha_beer_content
+    name: Beer Content (kg)
     icon: mdi:keg
     icon_color: deep-orange
     tap_action: none
     secondary_info: state
   - type: custom:mushroom-entity-card
-    entity: sensor.pivni_vaha_hmotnost_bez_offsetu_sudu
-    name: Váha celková (kg)
+    entity: sensor.pivni_vaha_raw_weight
+    name: Total Weight (kg)
     icon: mdi:keg
     icon_color: deep-white
     tap_action: none
     secondary_info: state
   - type: custom:mushroom-entity-card
-    entity: sensor.pivni_vaha_pocet_piv
-    name: Počet piv
+    entity: sensor.pivni_vaha_beer_count
+    name: Beer Count
     icon: mdi:beer
     icon_color: amber
     secondary_info: state
   - type: custom:mushroom-number-card
-    entity: number.pivni_vaha_offset_sudu_kg
-    name: Offset sudu (kg)
+    entity: number.pivni_vaha_keg_offset_kg
+    name: Keg Offset (kg)
     icon: mdi:tune
     icon_color: teal
     fill_container: true
@@ -41,13 +41,13 @@ cards:
           action: call-service
           service: number.set_value
           target:
-            entity_id: number.pivni_vaha_offset_sudu_kg
+            entity_id: number.pivni_vaha_keg_offset_kg
           data:
             value: 7
           perform_action: number.set_value
         color: green
         features_position: bottom
-        entity: number.pivni_vaha_offset_sudu_kg
+        entity: number.pivni_vaha_keg_offset_kg
       - type: custom:mushroom-template-card
         primary: 15 L
         secondary: 8.0 kg
@@ -57,7 +57,7 @@ cards:
           action: call-service
           service: number.set_value
           target:
-            entity_id: number.pivni_vaha_offset_sudu_kg
+            entity_id: number.pivni_vaha_keg_offset_kg
           data:
             value: 8
       - type: custom:mushroom-template-card
@@ -69,7 +69,7 @@ cards:
           action: call-service
           service: number.set_value
           target:
-            entity_id: number.pivni_vaha_offset_sudu_kg
+            entity_id: number.pivni_vaha_keg_offset_kg
           data:
             value: 10
       - type: custom:mushroom-template-card
@@ -81,6 +81,6 @@ cards:
           action: call-service
           service: number.set_value
           target:
-            entity_id: number.pivni_vaha_offset_sudu_kg
+            entity_id: number.pivni_vaha_keg_offset_kg
           data:
             value: 13

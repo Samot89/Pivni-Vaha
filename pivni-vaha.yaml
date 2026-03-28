@@ -31,7 +31,7 @@ wifi:
   reboot_timeout: 0s      # never reboot due to Wi-Fi loss
   power_save_mode: none   # lower latency for measurements/display
 
-  # Fallback hotspot (captive portal) when Wi-Fi connection fails
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
     ssid: "BeerScale-AP"
     password: "12345678"
@@ -47,42 +47,36 @@ i2c:
   scan: true
   frequency: 100kHz
 
+# ---------- 1-Wire (DS18B20) ----------
+# Requires 4.7 kOhm pull-up resistor between DATA (GPIO12) and VCC!
+one_wire:
+  - platform: gpio
+    pin: GPIO12
+
 
 font:
-  - file: "Arial Bold.ttf"
-    id: arial_bold_16
-    size: 20
-    glyphs: ["B","e","r","C","o","n","t","i","s"," ","P","c","u","k","g","0","1","2","3","4","5","6","7","8","9",".","V","a","h","O"]
-
   - file: "arial.ttf"
     id: font1
     size: 15
-    glyphs: ["B","e","r","C","o","n","t","i","s"," ","k","g","V","a","h","0","1","2","3","4","5","6","7","8","9",".","p","c","l","O"]
+    glyphs: ["P", "i", "v", "a", ":", "k", "s", "V", "h", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "C", "g", "l", " ","b","O","p","T","e","o","t"]
 
+# ---------- Display case (3D print) ----------
+# SSD1306 128x32 OLED case: https://www.thingiverse.com/thing:2844143/files
 display:
   - platform: ssd1306_i2c
-    model: 'SH1107_128x64'
-    rotation: 90
-    flip_y: false
-    flip_x: false
-    offset_y: 96
-    offset_x: 0
-    contrast: 1.0
+    model: "SSD1306 128x32"
+    address: 0x3C
     id: oled_display
     pages:
       - id: page_main
         lambda: |-
-          const int X = 18;  // horizontal offset (16–22 works well)
-          // Title
-          it.printf(X, 0,  id(font1), "Beer Content");
-          // Weight (pseudo-bold by double-printing)
-          it.printf(X, 14, id(font1), "%.1f kg", id(total_weight).state);
-          it.printf(X+1, 14, id(font1), "%.1f kg", id(total_weight).state);
-          // Beer count (pseudo-bold)
-          it.printf(X, 32, id(arial_bold_16), "Beer Count");
-          it.printf(X+1, 32, id(arial_bold_16), "Beer Count");
-          it.printf(X, 46, id(arial_bold_16), "%.0f pcs", id(beer_count).state);
-          it.printf(X+1, 46, id(arial_bold_16), "%.0f pcs", id(beer_count).state);
+          it.printf(0, 0,  id(font1), "%.1f kg", id(total_weight).state);
+          it.printf(0, 17, id(font1), "%.0f pcs", id(beer_count).state);
+      - id: page_temp
+        lambda: |-
+          it.printf(0, 0,  id(font1), "%.1f kg", id(total_weight).state);
+          it.printf(0, 17, id(font1), "%.1f C", id(beer_temp).state);
+
 
 # ---------- Sensors ----------
 sensor:
@@ -183,7 +177,7 @@ sensor:
       if (w < 0) w = 0;
       return w;
 
-  # Beer count – fixed: 1 beer = 0.505 kg (half-liter)
+  # Beer count – 1 beer = 0.505 kg (half-liter)
   - platform: template
     name: "Beer Count"
     id: beer_count
@@ -205,6 +199,15 @@ sensor:
     name: "Uptime"
     update_interval: 60s
 
+  # DS18B20 temperature (1-Wire, GPIO12)
+  - platform: dallas_temp
+    address: 0x4c000000bb871928
+    name: "Beer Temperature"
+    id: beer_temp
+    unit_of_measurement: "°C"
+    accuracy_decimals: 1
+    update_interval: 60s
+
 button:
   # STEP A: store zero (no load on scale)
   - platform: template
@@ -223,7 +226,7 @@ button:
         - component.update: load_cell_3
         - component.update: load_cell_4
 
-  # STEP B: calculate scale factor (2.0 kg reference weight)
+  # STEP B: calculate scale factor (reference weight)
   - platform: template
     name: "Calibration B – Calculate Scale (2.0 kg)"
     on_press:
@@ -321,3 +324,9 @@ number:
     set_action:
       - lambda: |-
           id(keg_offset) = x;  // save new offset value to global
+
+interval:
+  - interval: 5s
+    then:
+      - display.page.show_next: oled_display
+      - component.update: oled_display

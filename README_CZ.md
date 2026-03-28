@@ -23,6 +23,10 @@
 |:-:|:-:|:-:|
 | ![Platforma váhy](images/scale-platform-top.jpg) | ![Sud na váze](images/scale-in-use.jpg) | ![Elektronika spodek](images/electronics-bottom.jpg) |
 
+| OLED displej – váha + počet piv |
+|:-:|
+| ![OLED displej 30.3 kg / 60 ks](images/display-weight-count.jpg) |
+
 
 </div>
 
